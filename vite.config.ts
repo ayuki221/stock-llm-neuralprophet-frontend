@@ -65,6 +65,6 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    base: '/stock_llm_frontend/'
+    base: '//stock-llm-neuralprophet-frontend//'
   };
 });
