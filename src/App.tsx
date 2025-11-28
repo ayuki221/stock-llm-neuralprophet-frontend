@@ -58,7 +58,46 @@ export default function App() {
           });
       });
     }
+
+    // 請求通知權限
+    if ('Notification' in window) {
+      Notification.requestPermission();
+    }
   }, []);
+
+  // 檢查並發送通知
+  const checkAndNotify = (stocks: Stock[], isFiltered: boolean = false) => {
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+      return;
+    }
+
+    let matches: Stock[] = [];
+
+    if (isFiltered) {
+      matches = stocks;
+    } else {
+      // 如果是全部股票，需要根據當前設定篩選
+      matches = stocks.filter(stock => {
+        const method1Match =
+          (upTrendEnabled && stock.changePercent1 >= upTrendThreshold) ||
+          (downTrendEnabled && stock.changePercent1 <= downTrendThreshold);
+
+        const method2Match =
+          (upTrendEnabled && stock.changePercent2 >= upTrendThreshold) ||
+          (downTrendEnabled && stock.changePercent2 <= downTrendThreshold);
+
+        return method1Match || method2Match;
+      });
+    }
+
+    if (matches.length > 0) {
+      new Notification('股票通知', {
+        body: `發現 ${matches.length} 支符合條件的股票！`,
+        icon: '/pwa-192x192.png',
+        tag: 'stock-notification' // 避免重複通知堆疊
+      });
+    }
+  };
 
   // 載入股票資料
   const loadStocks = async () => {
@@ -67,6 +106,7 @@ export default function App() {
       setError(null);
       const response = await fetchStocks();
       setFilteredStocks(response.data);
+      checkAndNotify(response.data, false); // 檢查全部股票
       toast.success('股票資料載入成功');
     } catch (err) {
       const apiError = err as ApiError;
@@ -104,15 +144,16 @@ export default function App() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await fetchFilteredStocks({
         upTrendEnabled,
         downTrendEnabled,
         upTrendThreshold,
         downTrendThreshold
       });
-      
+
       setFilteredStocks(response.data);
+      checkAndNotify(response.data, true); // 已經是篩選過的股票
       toast.success(`找到 ${response.data.length} 支符合條件的股票`);
     } catch (err) {
       const apiError = err as ApiError;
@@ -240,9 +281,9 @@ export default function App() {
                     </div>
                   </div>
                 )}
-                
-                <StockList 
-                  stocks={filteredStocks} 
+
+                <StockList
+                  stocks={filteredStocks}
                   onStockClick={handleStockClick}
                   isLoading={isLoading}
                 />

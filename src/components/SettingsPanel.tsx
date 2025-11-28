@@ -29,14 +29,14 @@ export function SettingsPanel({
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-medium">滿足設定</h2>
-      
+
       {/* 上漲滿足 */}
       <Card className="p-4">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm">上漲滿足</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
               超過 {upTrendThreshold}% 時滿足條件
@@ -46,16 +46,16 @@ export function SettingsPanel({
               onCheckedChange={onUpTrendEnabledChange}
             />
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>-10%</span>
+              <span>0%</span>
               <span>10%</span>
             </div>
             <Slider
               value={[upTrendThreshold]}
               onValueChange={(value) => onUpTrendThresholdChange(value[0])}
-              min={-10}
+              min={0}
               max={10}
               step={0.1}
               className="w-full"
@@ -70,7 +70,7 @@ export function SettingsPanel({
           <div className="flex items-center justify-between">
             <span className="text-sm">下跌滿足</span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
               低於 {downTrendThreshold}% 時滿足條件
@@ -80,17 +80,17 @@ export function SettingsPanel({
               onCheckedChange={onDownTrendEnabledChange}
             />
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>-10%</span>
-              <span>10%</span>
+              <span>0%</span>
             </div>
             <Slider
               value={[downTrendThreshold]}
               onValueChange={(value) => onDownTrendThresholdChange(value[0])}
               min={-10}
-              max={10}
+              max={0}
               step={0.1}
               className="w-full"
             />
