@@ -318,11 +318,11 @@ export function StockDetail({ stock, onBack }: StockDetailProps) {
           </div>
         ) : (
           <Tabs defaultValue="predictions" className="w-full" onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-3">
+            {/* <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="predictions">歷史預測</TabsTrigger>
               <TabsTrigger value="price">量價資料</TabsTrigger>
               <TabsTrigger value="investors">三大法人</TabsTrigger>
-            </TabsList>
+            </TabsList> */}
 
             {/* 歷史預測標籤頁 */}
             <TabsContent value="predictions" className="mt-4">
