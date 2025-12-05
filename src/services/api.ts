@@ -29,6 +29,15 @@ const mapToFrontendStock = (item: BackendStock): Stock => ({
   averageChangePercent: 0
 });
 
+// 輔助函式：處理預測數值的四捨五入邏輯
+const roundPrediction = (value: number): number => {
+  if (value >= 500) {
+    return Math.round(value);
+  } else {
+    return Math.round(value * 2) / 2;
+  }
+};
+
 /**
  * 核心請求函式 (包含快取與佇列邏輯)
  * @param key 快取鍵值
@@ -123,8 +132,8 @@ export async function fetchStocks(): Promise<ApiResponse<Stock[]>> {
                 const json = await neuralRes.value.json();
                 const val = typeof json === 'string' ? JSON.parse(json) : json;
                 const items = val?.neuralprophet;
-                if (Array.isArray(items) && items.length > 0) price1 = items[0].price;
-                else if (items?.price) price1 = items.price;
+                if (Array.isArray(items) && items.length > 0) price1 = roundPrediction(items[0].price);
+                else if (items?.price) price1 = roundPrediction(items.price);
               } catch (e) { /* ignore */ }
             }
 
@@ -134,8 +143,8 @@ export async function fetchStocks(): Promise<ApiResponse<Stock[]>> {
                 const json = await llmRes.value.json();
                 const val = typeof json === 'string' ? JSON.parse(json) : json;
                 const items = val?.llm;
-                if (Array.isArray(items) && items.length > 0) price2 = items[0].price;
-                else if (items?.price) price2 = items.price;
+                if (Array.isArray(items) && items.length > 0) price2 = roundPrediction(items[0].price);
+                else if (items?.price) price2 = roundPrediction(items.price);
               } catch (e) { /* ignore */ }
             }
 
@@ -258,15 +267,15 @@ export async function fetchStockDetail(code: string): Promise<ApiResponse<StockD
         const json = await neuralRes.value.json();
         const val = typeof json === 'string' ? JSON.parse(json) : json;
         const items = val?.neuralprophet;
-        if (Array.isArray(items) && items.length > 0) price1 = items[0].price;
-        else if (items?.price) price1 = items.price;
+        if (Array.isArray(items) && items.length > 0) price1 = roundPrediction(items[0].price);
+        else if (items?.price) price1 = roundPrediction(items.price);
       }
       if (llmRes.status === 'fulfilled' && llmRes.value.ok) {
         const json = await llmRes.value.json();
         const val = typeof json === 'string' ? JSON.parse(json) : json;
         const items = val?.llm;
-        if (Array.isArray(items) && items.length > 0) price2 = items[0].price;
-        else if (items?.price) price2 = items.price;
+        if (Array.isArray(items) && items.length > 0) price2 = roundPrediction(items[0].price);
+        else if (items?.price) price2 = roundPrediction(items.price);
       }
       if (priceRes.status === 'fulfilled' && priceRes.value.ok) {
         const json = await priceRes.value.json();
@@ -379,13 +388,13 @@ export async function fetchStockPrediction(code: string): Promise<ApiResponse<an
 
     if (targetItems.length === 0) {
       if (neuralItems?.price) {
-        predictions.push({ date: neuralItems.next_day, predictedPrice: neuralItems.price, confidence: 0.8 });
+        predictions.push({ date: neuralItems.next_day, predictedPrice: roundPrediction(neuralItems.price), confidence: 0.8 });
       } else if (llmItems?.price) {
-        predictions.push({ date: llmItems.next_day, predictedPrice: llmItems.price, confidence: 0.8 });
+        predictions.push({ date: llmItems.next_day, predictedPrice: roundPrediction(llmItems.price), confidence: 0.8 });
       }
     } else {
       targetItems.forEach((item: any) => {
-        predictions.push({ date: item.next_day, predictedPrice: item.price, confidence: 0.8 });
+        predictions.push({ date: item.next_day, predictedPrice: roundPrediction(item.price), confidence: 0.8 });
       });
     }
 
@@ -499,7 +508,7 @@ export async function fetchHistoricalPredictions(code: string, days: number = 20
           if (item.next_day && item.price !== undefined) {
             const date = item.next_day;
             if (!predictionMap.has(date)) predictionMap.set(date, { date, predictedPrice1: 0, predictedPrice2: 0 });
-            predictionMap.get(date)!.predictedPrice1 = item.price;
+            predictionMap.get(date)!.predictedPrice1 = roundPrediction(item.price);
           }
         });
       }
@@ -514,7 +523,7 @@ export async function fetchHistoricalPredictions(code: string, days: number = 20
           if (item.next_day && item.price !== undefined) {
             const date = item.next_day;
             if (!predictionMap.has(date)) predictionMap.set(date, { date, predictedPrice1: 0, predictedPrice2: 0 });
-            predictionMap.get(date)!.predictedPrice2 = item.price;
+            predictionMap.get(date)!.predictedPrice2 = roundPrediction(item.price);
           }
         });
       }
